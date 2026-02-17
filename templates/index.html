@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+    <title>Image Compressor</title>
+    <style>
+        body { font-family: sans-serif; margin: 40px; }
+        .container { max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        input[type="file"] { margin-bottom: 15px; }
+        button { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload an Image to Compress</h1>
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept="image/*" required>
+            <button type="submit">Compress and Upload</button>
+        </form>
+        {% if compressed_url %}
+            <p>Compressed image: <a href="{{ compressed_url }}" target="_blank">{{ compressed_url }}</a></p>
+        {% endif %}
+    </div>
+</body>
+</html>
