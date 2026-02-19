@@ -1,27 +1,217 @@
 <!doctype html>
 <html>
 <head>
-    <title>Image Compressor</title>
+    <title>Resumemo App</title>
     <style>
-        body { font-family: sans-serif; margin: 40px; }
-        .container { max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
-        input[type="file"] { margin-bottom: 15px; }
-        button { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        button:hover { background-color: #0056b3; }
-        a { color: #007bff; text-decoration: none; }
-        a:hover { text-decoration: underline; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: linear-gradient(135deg, #607d8b 0%, #4caf50 100%); min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding-top: 50px; }
+        
+        .container { 
+            width: 90%; 
+            max-width: 600px; 
+            background: white; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+            overflow: hidden;
+            padding-bottom: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #607d8b 0%, #4caf50 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1, h2 { color: #333; margin: 0; }
+        
+        /* Tabs */
+        .tabs { display: flex; background: #f0f0f0; }
+        .tab-btn { 
+            flex: 1; 
+            padding: 15px; 
+            cursor: pointer; 
+            border: none; 
+            background: transparent; 
+            font-size: 16px; 
+            font-weight: bold;
+            color: #666;
+            transition: all 0.3s;
+        }
+        .tab-btn:hover { background: #e0e0e0; }
+        .tab-btn.active { 
+            background: white; 
+            color: #4caf50; 
+            border-bottom: 3px solid #4caf50;
+        }
+        
+        .tab-content { 
+            display: none; 
+            padding: 30px; 
+        }
+        .tab-content.active { display: block; }
+
+        /* Forms */
+        .form-group { margin-bottom: 20px; }
+        input[type="text"], input[type="file"] { 
+            width: 100%; 
+            padding: 12px; 
+            border: 2px solid #ddd; 
+            border-radius: 8px; 
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus, input[type="file"]:focus { 
+            border-color: #4caf50; 
+            outline: none;
+        }
+        
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            background: linear-gradient(135deg, #607d8b 0%, #4caf50 100%); 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-size: 16px; 
+            cursor: pointer; 
+            transition: transform 0.2s;
+        }
+        button:hover { transform: translateY(-2px); }
+        
+        /* Weather Results */
+        .weather-result { 
+            margin-top: 20px; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8f5e9 100%); 
+            border-radius: 10px; 
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .weather-icon { font-size: 60px; margin-bottom: 10px; }
+        .weather-temp { font-size: 48px; font-weight: bold; color: #333; }
+        .weather-desc { font-size: 20px; color: #666; margin: 10px 0; }
+        .weather-details { display: flex; justify-content: space-around; margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd; }
+        .weather-detail-item { text-align: center; }
+        .weather-detail-label { font-size: 12px; color: #999; }
+        .weather-detail-value { font-size: 16px; font-weight: bold; color: #333; }
+        
+        .weather-error { color: #e74c3c; margin-top: 10px; text-align: center; }
+        .loading { text-align: center; color: #999; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Upload an Image to Compress</h1>
-        <form action="/upload" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" accept="image/*" required>
-            <button type="submit">Compress and Upload</button>
-        </form>
-        {% if compressed_url %}
-            <p>Compressed image: <a href="{{ compressed_url }}" target="_blank">{{ compressed_url }}</a></p>
-        {% endif %}
+        <div class="tabs">
+            <button class="tab-btn {% if active_tab != 'weather' %}active{% endif %}" onclick="switchTab('compress')">Image Compressor</button>
+            <button class="tab-btn {% if active_tab == 'weather' %}active{% endif %}" onclick="switchTab('weather')">Weather</button>
+        </div>
+
+        <!-- Image Compressor Tab -->
+        <div id="compress" class="tab-content {% if active_tab != 'weather' %}active{% endif %}">
+            <h1>Upload an Image to Compress</h1>
+            <form action="/upload" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" accept="image/*" required>
+                <button type="submit">Compress and Upload</button>
+            </form>
+            {% if compressed_url %}
+                <p>Compressed image: <a href="{{ compressed_url }}" target="_blank">{{ compressed_url }}</a></p>
+            {% endif %}
+        </div>
+
+        <!-- Weather Tab -->
+        <div id="weather" class="tab-content {% if active_tab == 'weather' %}active{% endif %}">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h1>☀️ Check Weather</h1>
+                <p style="color: #666;">Enter a city name to get the current weather</p>
+            </div>
+            <form id="weather-form">
+                <div class="form-group">
+                    <input type="text" id="city" name="city" placeholder="Enter city name (e.g., London, New York)" required>
+                </div>
+                <button type="submit">🔍 Get Weather</button>
+            </form>
+            <div id="weather-result"></div>
+        </div>
     </div>
+
+        <script>
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            // Highlight button
+            if(tabName === 'compress') {
+                document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
+            } else {
+                document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+            }
+        }
+
+        // Set initial active tab
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if active_tab == 'weather' %}
+                switchTab('weather');
+            {% else %}
+                switchTab('compress');
+            {% endif %}
+        });
+
+        document.getElementById('weather-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const city = document.getElementById('city').value;
+            const resultDiv = document.getElementById('weather-result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Loading weather data...</div>';
+
+            try {
+                const response = await fetch('/weather', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'city=' + encodeURIComponent(city)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Map weather codes to icons
+                    let icon = '☀️';
+                    const desc = data.description.toLowerCase();
+                    if (desc.includes('cloud')) icon = '☁️';
+                    if (desc.includes('rain')) icon = '🌧️';
+                    if (desc.includes('snow')) icon = '❄️';
+                    if (desc.includes('thunder')) icon = '⛈️';
+                    if (desc.includes('fog') || desc.includes('mist')) icon = '🌫️';
+                    
+                    resultDiv.innerHTML = `
+                        <div class="weather-result">
+                            <div class="weather-icon">${icon}</div>
+                            <div class="weather-temp">${data.temperature}°C</div>
+                            <div class="weather-desc">${data.description}</div>
+                            <div style="font-size: 14px; color: #666; margin-top: 5px;">📍 ${data.city}, ${data.country}</div>
+                            <div class="weather-details">
+                                <div class="weather-detail-item">
+                                    <div class="weather-detail-label">Wind Speed</div>
+                                    <div class="weather-detail-value">💨 ${data.wind_speed} km/h</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p class="weather-error">❌ Error: ${data.error}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="weather-error">❌ An error occurred: ${error}</p>`;
+            }
+        });
+    </script>
 </body>
 </html>
